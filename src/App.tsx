@@ -18,8 +18,11 @@ import {
   Check,
   User,
   Sparkles,
-  Award
+  Award,
+  Download
 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 function getSubjectStats(nameStr: string) {
   // Simple deterministic hash based on name characters to compute realistic modeling parameters
@@ -79,6 +82,7 @@ export default function App() {
   // Tabletop simulation game state
   const [selectedSimOptionIndex, setSelectedSimOptionIndex] = useState<number | null>(null);
   const [hasCopied, setHasCopied] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   // Initialize form with preset values on mount & selection
   useEffect(() => {
@@ -172,31 +176,88 @@ export default function App() {
     setTimeout(() => setHasCopied(false), 2000);
   };
 
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById("active-report-viewport");
+    if (!element) return;
+
+    setDownloadingPdf(true);
+    try {
+      // Temporarily override max-height and scrolling to capture the full overflowing text content
+      const bodyEl = document.getElementById("tab-viewport-body");
+      let originalMaxHeight = "";
+      let originalOverflow = "";
+      if (bodyEl) {
+        originalMaxHeight = bodyEl.style.maxHeight;
+        originalOverflow = bodyEl.style.overflowY;
+        bodyEl.style.maxHeight = "none";
+        bodyEl.style.overflowY = "visible";
+      }
+
+      // Allow small delay for rendering lifecycle adjustment if any
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(element, {
+        backgroundColor: "#111113",
+        scale: 2, // Retain high-DPI quality
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      // Restore original container scroll parameters
+      if (bodyEl) {
+        bodyEl.style.maxHeight = originalMaxHeight;
+        bodyEl.style.overflowY = originalOverflow;
+      }
+
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      // Scale appropriately: 72 ppi baseline conversion
+      const pdfWidth = imgWidth / 2;
+      const pdfHeight = imgHeight / 2;
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: [pdfWidth, pdfHeight]
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`PsycheOps_Dossier_${name.replace(/\s+/g, "_")}.pdf`);
+    } catch (err) {
+      console.error("PDF download sequence failed:", err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const stats = getSubjectStats(name);
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-zinc-100 font-sans selection:bg-rose-500/30 selection:text-white" id="root-console">
       {/* Header Bar */}
-      <header className="border-b border-[#2D2D30] bg-[#0A0A0B]/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between" id="app-header">
-        <div className="flex items-center gap-4" id="header-logo">
-          <div className="p-2 bg-rose-500/10 border border-rose-500/20 rounded-none text-rose-500" id="main-icon-container">
+      <header className="border-b border-[#2D2D30] bg-[#0A0A0B]/90 backdrop-blur-md sticky top-0 z-50 px-4 md:px-6 py-3.5 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4" id="app-header">
+        <div className="flex items-center gap-3 md:gap-4" id="header-logo">
+          <div className="p-2 bg-rose-500/10 border border-rose-500/20 rounded-none text-rose-500 shrink-0" id="main-icon-container">
             <Shield className="w-5 h-5 animate-pulse" id="header-shield" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-serif text-white tracking-widest uppercase flex items-center gap-2" id="title-text">
-              PSYCHEOPS <span className="text-[10px] font-mono tracking-[0.2em] px-2.5 py-0.5 bg-rose-500/15 border border-rose-500/30 text-rose-400 rounded-sm font-semibold">IDENTITY AUDIT</span>
+            <h1 className="text-lg md:text-2xl font-serif text-white tracking-widest uppercase flex flex-wrap items-center gap-2" id="title-text">
+              PSYCHEOPS <span className="text-[9px] md:text-[10px] font-mono tracking-[0.2em] px-2.5 py-0.5 bg-rose-500/15 border border-rose-500/30 text-rose-400 rounded-sm font-semibold">IDENTITY AUDIT</span>
             </h1>
-            <p className="text-[10px] font-mono tracking-widest text-[#71717A] uppercase mt-0.5" id="subtitle-text">Clinical Profiling & Advanced Threat-Modeling Matrix</p>
+            <p className="text-[9px] md:text-[10px] font-mono tracking-widest text-[#71717A] uppercase mt-0.5" id="subtitle-text">Clinical Profiling & Advanced Threat-Modeling Matrix</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-xs font-mono text-zinc-500" id="system-metadata-container">
+        <div className="hidden sm:flex items-center gap-3 text-xs font-mono text-zinc-500" id="system-metadata-container">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping inline-block" id="ping-indicator"></span>
           <span id="system-time" className="tracking-widest uppercase text-[10px] text-rose-500 font-bold">MODE: THREAT DOSSIER ACTIVE</span>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid lg:grid-cols-12 gap-8" id="main-workspace">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8 grid lg:grid-cols-12 gap-6 md:gap-8" id="main-workspace">
         
         {/* Left Console: Control Inputs & Preset Loader */}
         <section className="lg:col-span-5 space-y-8" id="control-panel-section">
@@ -245,7 +306,7 @@ export default function App() {
 
             {/* Editing fields */}
             <div className="space-y-4 pt-4 border-t border-[#2D2D30]" id="form-fields">
-              <div className="grid grid-cols-2 gap-4" id="identity-names">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" id="identity-names">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Codename / Full Name</label>
                   <input
@@ -254,7 +315,7 @@ export default function App() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Jack Vance"
-                    className="w-full bg-[#0A0A0B] border border-[#2D2D30] hover:border-[#4E4E52] focus:border-rose-500 rounded-none px-3 py-2.5 text-xs font-mono text-white placeholder-zinc-700 focus:outline-none transition-all"
+                    className="w-full bg-[#0A0A0B] border border-[#2D2D30] hover:border-[#4E4E52] focus:border-rose-500 rounded-none px-3 py-3 text-xs font-mono text-white placeholder-zinc-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -265,7 +326,7 @@ export default function App() {
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                     placeholder="e.g. Systems Director"
-                    className="w-full bg-[#0A0A0B] border border-[#2D2D30] hover:border-[#4E4E52] focus:border-rose-500 rounded-none px-3 py-2.5 text-xs font-mono text-white placeholder-zinc-700 focus:outline-none transition-all"
+                    className="w-full bg-[#0A0A0B] border border-[#2D2D30] hover:border-[#4E4E52] focus:border-rose-500 rounded-none px-3 py-3 text-xs font-mono text-white placeholder-zinc-700 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -447,13 +508,13 @@ export default function App() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-mono text-rose-400 tracking-[0.2em] font-semibold">INTEL CODE: #{name.toUpperCase().replace(/\s/g, "_")}</span>
-                        <span className="px-2 py-0.5 bg-indigo-505/10 border border-indigo-500/20 text-[9px] font-mono rounded-none text-indigo-400">CLASS 3 DOSSIER</span>
+                        <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-mono rounded-none text-indigo-400">CLASS 3 DOSSIER</span>
                       </div>
                       <h2 className="text-3xl font-serif font-bold text-white tracking-tight leading-none mt-1">{name}</h2>
                       <p className="text-xs font-mono text-zinc-400 tracking-wider uppercase">{role || "Unlisted Corporate Assignment"}</p>
                     </div>
                     
-                    <div className="flex items-center gap-2 self-start md:self-auto" id="report-top-actions">
+                    <div className="flex flex-wrap items-center gap-2 self-start md:self-auto" id="report-top-actions" data-html2canvas-ignore="true">
                       <button
                         id="btn-copy-report"
                         onClick={handleCopyReport}
@@ -471,6 +532,26 @@ export default function App() {
                           </>
                         )}
                       </button>
+
+                      <button
+                        id="btn-download-pdf"
+                        onClick={handleDownloadPDF}
+                        disabled={downloadingPdf}
+                        className="px-3.5 py-2 bg-rose-950/25 hover:bg-rose-900/40 border border-rose-500/30 text-rose-400 hover:text-rose-300 rounded-none text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {downloadingPdf ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-400" />
+                            <span>COMPILING PDF...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3.5 h-3.5" />
+                            <span>DOWNLOAD PDF</span>
+                          </>
+                        )}
+                      </button>
+
                       <button
                         id="btn-refresh-sequence"
                         onClick={handleGenerate}
@@ -482,22 +563,22 @@ export default function App() {
                   </div>
 
                   {/* THORNE CLINICAL INTEL-CORE MATRIX (Visual Sub-Grid parameters) */}
-                  <div className="grid grid-cols-4 border border-[#2D2D30] bg-[#0A0A0B] p-3 text-center" id="thorne-stats-grid">
-                    <div className="border-r border-[#2D2D30] py-1.5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 border border-[#2D2D30] bg-[#0A0A0B] p-2.5 md:p-3 text-center" id="thorne-stats-grid">
+                    <div className="border-r border-b md:border-b-0 border-[#2D2D30] py-2 md:py-1.5">
                       <span className="text-[8px] font-mono text-[#71717A] tracking-[0.2em] block">INT INDEX</span>
-                      <span className="text-lg font-mono font-bold tracking-tight text-white">{stats.intVal || "135"}</span>
+                      <span className="text-base md:text-lg font-mono font-bold tracking-tight text-white">{stats.intVal || "135"}</span>
                     </div>
-                    <div className="border-r border-[#2D2D30] py-1.5">
+                    <div className="border-b md:border-b-0 md:border-r border-[#2D2D30] py-2 md:py-1.5">
                       <span className="text-[8px] font-mono text-[#71717A] tracking-[0.2em] block">EMO QUOTIENT</span>
-                      <span className="text-lg font-mono font-bold tracking-tight text-white">{stats.emoVal || "075"}</span>
+                      <span className="text-base md:text-lg font-mono font-bold tracking-tight text-white">{stats.emoVal || "075"}</span>
                     </div>
-                    <div className="border-r border-[#2D2D30] py-1.5">
+                    <div className="border-r border-[#2D2D30] py-2 md:py-1.5">
                       <span className="text-[8px] font-mono text-[#71717A] tracking-[0.2em] block">TRUST VEC</span>
-                      <span className="text-lg font-mono font-bold tracking-tight text-rose-500">{stats.trustVal || "14"}%</span>
+                      <span className="text-base md:text-lg font-mono font-bold tracking-tight text-rose-500">{stats.trustVal || "14"}%</span>
                     </div>
-                    <div className="py-1.5">
+                    <div className="py-2 md:py-1.5">
                       <span className="text-[8px] font-mono text-[#71717A] tracking-[0.2em] block">EGO DEFL</span>
-                      <span className="text-lg font-mono font-bold tracking-tight text-amber-500">{stats.egoVal || "84"}%</span>
+                      <span className="text-base md:text-lg font-mono font-bold tracking-tight text-amber-500">{stats.egoVal || "84"}%</span>
                     </div>
                   </div>
 
@@ -534,7 +615,7 @@ export default function App() {
                     onClick={() => setActiveTab("vulnerability")}
                     className={`px-4 py-3.5 text-xs font-mono font-medium border-b-2 tracking-wider transition-all uppercase whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                       activeTab === "vulnerability"
-                        ? "border-indigo-500 text-indigo-400 bg-indigo-505/5 font-semibold"
+                        ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 font-semibold"
                         : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
@@ -556,7 +637,7 @@ export default function App() {
                 </div>
 
                 {/* Sub-Pane Dynamic Viewport */}
-                <div className="p-6 overflow-y-auto max-h-[600px] space-y-6" id="tab-viewport-body">
+                <div className="p-4 md:p-6 overflow-y-auto max-h-[600px] space-y-6" id="tab-viewport-body">
                   <AnimatePresence mode="wait">
                     
                     {/* TAB 1: CLINICAL PSYCH DOSSIER */}
@@ -819,7 +900,7 @@ export default function App() {
                             <span className="w-1.5 h-1.5 rounded-none bg-[#FBBF24] animate-pulse"></span> Human Attack Surface Mapping (Susceptibility Meters)
                           </h3>
                           
-                          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4" id="meters-bento-grid">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4" id="meters-bento-grid">
                             {report.redOpsAssessment.susceptibilityMeters.map((meter, idx) => {
                               // Dynamic severity styling
                               const isHigh = meter.score >= 70;
@@ -839,7 +920,7 @@ export default function App() {
                                 <div
                                   key={idx}
                                   id={`meter-bento-${idx}`}
-                                  className="bg-[#121214] border border-[#2D2D30] rounded-none p-4.5 flex flex-col justify-between hover:border-[#4E4E52] transition-colors"
+                                  className="bg-[#121214] border border-[#2D2D30] rounded-none p-4 md:p-5 flex flex-col justify-between hover:border-[#4E4E52] transition-colors"
                                 >
                                   <div>
                                     <div className="flex items-center justify-between gap-2 mb-1.5" id={`meter-header-${idx}`}>
@@ -917,7 +998,7 @@ export default function App() {
                         {report.redOpsAssessment.socialEngineeringVulnerabilities && (
                           <div className="space-y-4 pt-4 border-t border-[#2D2D30]" id="se-vulnerabilities-block">
                             <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-none bg-indigo-505 bg-indigo-400"></span> Tactical Social Engineering Vector Mapping
+                              <span className="w-1.5 h-1.5 rounded-none bg-indigo-500"></span> Tactical Social Engineering Vector Mapping
                             </h3>
 
                             <div className="grid gap-5" id="se-vulnerabilities-list-grid">
