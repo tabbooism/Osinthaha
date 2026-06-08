@@ -744,6 +744,61 @@ export default function App() {
                           </div>
                         </div>
 
+                        {/* Realpolitik Assessment Container (New Machiavellian perspective module!) */}
+                        {report.greeneAnalysis.realpolitikAssessment && (
+                          <div className="space-y-4 pt-4 border-t border-[#2D2D30]" id="realpolitik-assessment-block">
+                            <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-none bg-amber-500 animate-pulse"></span> Machiavellian Realpolitik Assessment
+                            </h3>
+
+                            <div className="grid md:grid-cols-2 gap-5" id="realpolitik-cards-grid">
+                              {/* Strategic Maneuvering */}
+                              <div className="bg-[#121214] border border-[#2D2D30] rounded-none p-5 space-y-2" id="realpolitik-maneuver-card">
+                                <div className="flex justify-between items-center border-b border-[#2D2D30] pb-2">
+                                  <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block font-bold">I. Strategic Maneuvering Capacity</span>
+                                  <span className="text-[9px] font-mono text-zinc-500 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20">MANEUVER</span>
+                                </div>
+                                <p className="text-zinc-300 text-xs leading-relaxed font-sans pt-1">
+                                  {report.greeneAnalysis.realpolitikAssessment.strategicManeuvering}
+                                </p>
+                              </div>
+
+                              {/* Understanding & Use of Power */}
+                              <div className="bg-[#121214] border border-[#2D2D30] rounded-none p-5 space-y-2" id="realpolitik-power-card">
+                                <div className="flex justify-between items-center border-b border-[#2D2D30] pb-2">
+                                  <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block font-bold">II. Systemic Power Interpretation</span>
+                                  <span className="text-[9px] font-mono text-zinc-500 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20">HIERARCHY</span>
+                                </div>
+                                <p className="text-zinc-300 text-xs leading-relaxed font-sans pt-1">
+                                  {report.greeneAnalysis.realpolitikAssessment.understandingAndUseOfPower}
+                                </p>
+                              </div>
+
+                              {/* Susceptibility to Influence */}
+                              <div className="bg-[#121214] border border-[#2D2D30] rounded-none p-5 space-y-2" id="realpolitik-influence-card">
+                                <div className="flex justify-between items-center border-b border-[#2D2D30] pb-2">
+                                  <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block font-bold">III. Susceptibility to Outer Influence</span>
+                                  <span className="text-[9px] font-mono text-zinc-500 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20">EXPOSED</span>
+                                </div>
+                                <p className="text-zinc-300 text-xs leading-relaxed font-sans pt-1">
+                                  {report.greeneAnalysis.realpolitikAssessment.influenceSusceptibility}
+                                </p>
+                              </div>
+
+                              {/* Defensive Realpolitik Advice */}
+                              <div className="bg-[#121214] border-l-2 border-amber-500 bg-amber-500/5 p-5 space-y-2" id="realpolitik-advice-card">
+                                <div className="flex justify-between items-center border-b border-amber-500/20 pb-2">
+                                  <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block font-bold text-amber-400">IV. Realpolitik Defensive Guidelines</span>
+                                  <span className="text-[9px] font-mono text-amber-400 font-bold px-2 py-0.5 bg-amber-500/15">MITIGATION</span>
+                                </div>
+                                <p className="text-amber-100 text-xs leading-relaxed font-serif italic pt-1">
+                                  "{report.greeneAnalysis.realpolitikAssessment.powerTacticAdvice}"
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                       </motion.div>
                     )}
 
@@ -811,7 +866,7 @@ export default function App() {
                         {/* PHYSICAL/COGNITIVE EXPOSURE SCENARIOS */}
                         <div className="space-y-4" id="exposure-scenarios-block">
                           <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-none bg-indigo-505 bg-indigo-400"></span> Targeted Cognitive Vector Modeling
+                            <span className="w-1.5 h-1.5 rounded-none bg-indigo-400"></span> Targeted Cognitive Vector Modeling
                           </h3>
 
                           <div className="space-y-4" id="scr-card-container">
@@ -857,6 +912,77 @@ export default function App() {
                             ))}
                           </div>
                         </div>
+
+                        {/* New Dedicated Social Engineering Tactics Module */}
+                        {report.redOpsAssessment.socialEngineeringVulnerabilities && (
+                          <div className="space-y-4 pt-4 border-t border-[#2D2D30]" id="se-vulnerabilities-block">
+                            <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-none bg-indigo-505 bg-indigo-400"></span> Tactical Social Engineering Vector Mapping
+                            </h3>
+
+                            <div className="grid gap-5" id="se-vulnerabilities-list-grid">
+                              {report.redOpsAssessment.socialEngineeringVulnerabilities.map((sev, idx) => {
+                                const tLower = sev.tacticType.toLowerCase();
+                                const isPhishing = tLower.includes("phish");
+                                const isPretexting = tLower.includes("pretext");
+                                const isBaiting = tLower.includes("bait");
+
+                                const badgeColorClass = isPhishing
+                                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                  : isPretexting
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                    : isBaiting
+                                      ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                                      : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    id={`se-vuln-${idx}`}
+                                    className="bg-[#121214] border border-[#2D2D30] rounded-none p-5 space-y-4"
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2D2D30] pb-3" id={`se-header-${idx}`}>
+                                      <div>
+                                        <span className={`px-2.5 py-0.5 rounded-none text-[9px] font-mono uppercase border font-bold tracking-widest ${badgeColorClass}`}>
+                                          {sev.tacticType}
+                                        </span>
+                                        <h4 className="text-sm font-serif font-bold text-white mt-1.5">
+                                          {sev.identifiedVulnerability}
+                                        </h4>
+                                      </div>
+                                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-[9px]">TACTIC VECTOR</span>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-2 gap-5" id={`se-body-${idx}`}>
+                                      {/* Specific Attack Vector detail */}
+                                      <div className="space-y-1.5" id={`se-vector-${idx}`}>
+                                        <span className="font-mono text-[9px] text-[#71717A] tracking-wider uppercase block">Simulated Adverse Attack Vector Playout</span>
+                                        <p className="text-zinc-300 leading-relaxed bg-[#0A0A0B] p-4 rounded-none border border-[#2D2D30] font-sans text-xs">
+                                          {sev.specificAttackVector}
+                                        </p>
+                                      </div>
+
+                                      {/* Countermeasures checklist */}
+                                      <div className="space-y-1.5" id={`se-countermeasures-${idx}`}>
+                                        <span className="font-mono text-[9px] text-[#71717A] tracking-wider uppercase block">Countermeasures & Defensive Controls Blueprint</span>
+                                        <div className="bg-[#0A0A0B] border border-[#2D2D30] p-4 space-y-3 font-sans text-xs">
+                                          {sev.countermeasuresAndDefenses.map((cd, cdIdx) => (
+                                            <div key={cdIdx} className="flex gap-2.5 items-start text-zinc-300" id={`se-cd-${idx}-${cdIdx}`}>
+                                              <span className="w-4 h-4 rounded-none bg-[#4ADE80]/15 border border-[#4ADE80]/30 text-[#4ADE80] flex items-center justify-center shrink-0 mt-0.5" id={`cd-check-${cdIdx}`}>
+                                                <Check className="w-2.5 h-2.5 text-[#4ADE80]" />
+                                              </span>
+                                              <span className="leading-relaxed">{cd}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
 
                       </motion.div>
                     )}

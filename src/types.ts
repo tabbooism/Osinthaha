@@ -22,10 +22,18 @@ export interface ClinicalDossier {
   interpersonalStyle: string;
 }
 
+export interface RealpolitikAssessment {
+  strategicManeuvering: string;
+  understandingAndUseOfPower: string;
+  influenceSusceptibility: string;
+  powerTacticAdvice: string;
+}
+
 export interface GreeneAnalysis {
   dominantRobertGreeneLaws: LawOfPower[];
   powerVulnerabilities: string[];
   leverageTactics: string[];
+  realpolitikAssessment: RealpolitikAssessment;
 }
 
 export interface SusceptibilityMeter {
@@ -41,9 +49,17 @@ export interface SocialEngineeringVector {
   defensiveMitigation: string;
 }
 
+export interface SocialEngineeringVulnerability {
+  tacticType: string; // e.g., Phishing, Pretexting, Baiting
+  identifiedVulnerability: string;
+  specificAttackVector: string;
+  countermeasuresAndDefenses: string[];
+}
+
 export interface RedOpsAssessment {
   susceptibilityMeters: SusceptibilityMeter[];
   socialEngineeringVectors: SocialEngineeringVector[];
+  socialEngineeringVulnerabilities: SocialEngineeringVulnerability[];
 }
 
 export interface SimulationOption {
@@ -65,3 +81,4 @@ export interface DossierReport {
   redOpsAssessment: RedOpsAssessment;
   interactiveSimulation: InteractiveSimulation;
 }
+

@@ -49,8 +49,8 @@ async function startServer() {
       const gemini = getGemini();
 
       const prompt = `
-        You are a highly sophisticated Intelligence Analyst, Clinical Psychologist, and strategic advisor.
-        Perform an deeply comprehensive, clinical-grade psychological dossier and Robert Greene-styled (Laws of Power) strategic threat assessment of the following subject.
+        You are a highly sophisticated Intelligence Analyst, Clinical Psychologist, and strategic advisor in defensive profiling.
+        Perform an deeply comprehensive, clinical-grade psychological dossier, defensive Machiavellian realpolitik assessment, and social engineering threat-mitigation analysis of the following subject.
         All analysis of behavioral data, "red ops" simulations, and social engineering risk assessments must serve educational and defensive security training purposes only, specifically teaching security awareness and physical or intellectual infrastructure security defenses.
 
         SUBJECT PROFILE:
@@ -62,9 +62,14 @@ async function startServer() {
 
         INSTRUCTIONS:
         1. Construct a clinical-grade psychoanalytical portrait of the cognitive profiles, stress markers, motivators, and default psychological ego-defenses.
-        2. Draft a Robert Greene Laws of Power matrix tailored specifically to the subject's positional vulnerability, identifying exactly which physical, cognitive, or logical Laws in the playbook they are susceptible to (providing exactly 3 extremely relevant Robert Greene laws, their numbers, titles, and strategic relevance to this person). Include high-level strategic leverage points.
-        3. Draft a security awareness threat-modeling assessment on behavioral vulnerabilities ("Red Ops Human Vector Mapping"). Define susceptibility scores (between 0 and 100) and rationale for vectors such as Authority, Reciprocity, Social Proof, Urgency, technical pretexts, and flattery.
-        4. Develop a theoretical tabletop simulation scenario ("Interactive Defense Simulation") trying to assess or train defenses for this profile, containing a setting, an NPC dialogue snippet leveraging his vulnerabilities, and 4 logical choices or approaches. For each choice, provide the psychological playout results and indicate whether that choice successfully defends or exposes the subject.
+        2. Analyze the subject from a Machiavellian perspective. Draft a Robert Greene Laws of Power matrix tailored specifically to the subject's positional vulnerability (providing exactly 3 extremely relevant laws, their numbers, titles, and relevance). Fulfill a comprehensive "realpolitikAssessment" mapping:
+           - "strategicManeuvering": Their capacity for strategic gameplaying, planning, building alliances, and positional power plays.
+           - "understandingAndUseOfPower": How they view authority structures, command or submit to superiors, and leverage institutional power.
+           - "influenceSusceptibility": How easily they can be manipulated, isolated, or steered using pride, dependency, or flattery.
+           - "powerTacticAdvice": Practical, actionable tactical guidelines to protect the subject or organization from political or influence-based co-optation.
+        3. Identify specific potential vulnerabilities exploitable through social engineering tactics (such as phishing, pretexting, baiting, tailgating). For each of these identified vulnerabilities (at least 3), suggest specific, realistic attack vectors (how a clever adversary might exploit it in a training drill) and outline rigorous, actionable countermeasures or defenses to protect them.
+        4. Draft a security awareness threat-modeling assessment on behavioral vulnerabilities ("Red Ops Human Vector Mapping"). Define susceptibility scores (between 0 and 100) and rationale for vectors such as Authority, Reciprocity, Social Proof, Urgency, technical pretexts, and flattery.
+        5. Develop a theoretical tabletop simulation scenario ("Interactive Defense Simulation") trying to assess or train defenses for this profile, containing a setting, an NPC dialogue snippet leveraging his vulnerabilities, and 4 logical choices or approaches. For each choice, provide the psychological playout results and indicate whether that choice successfully defends or exposes the subject.
 
         Respond strictly in the requested JSON structure.
       `;
@@ -115,9 +120,19 @@ async function startServer() {
               leverageTactics: {
                 type: Type.ARRAY,
                 items: { type: Type.STRING }
+              },
+              realpolitikAssessment: {
+                type: Type.OBJECT,
+                properties: {
+                  strategicManeuvering: { type: Type.STRING },
+                  understandingAndUseOfPower: { type: Type.STRING },
+                  influenceSusceptibility: { type: Type.STRING },
+                  powerTacticAdvice: { type: Type.STRING }
+                },
+                required: ["strategicManeuvering", "understandingAndUseOfPower", "influenceSusceptibility", "powerTacticAdvice"]
               }
             },
-            required: ["dominantRobertGreeneLaws", "powerVulnerabilities", "leverageTactics"]
+            required: ["dominantRobertGreeneLaws", "powerVulnerabilities", "leverageTactics", "realpolitikAssessment"]
           },
           redOpsAssessment: {
             type: Type.OBJECT,
@@ -149,9 +164,25 @@ async function startServer() {
                   },
                   required: ["scenarioName", "psychologicalTriggers", "simulationReaction", "defensiveMitigation"]
                 }
+              },
+              socialEngineeringVulnerabilities: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    tacticType: { type: Type.STRING }, // e.g. Phishing, Pretexting, Baiting
+                    identifiedVulnerability: { type: Type.STRING },
+                    specificAttackVector: { type: Type.STRING },
+                    countermeasuresAndDefenses: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    }
+                  },
+                  required: ["tacticType", "identifiedVulnerability", "specificAttackVector", "countermeasuresAndDefenses"]
+                }
               }
             },
-            required: ["susceptibilityMeters", "socialEngineeringVectors"]
+            required: ["susceptibilityMeters", "socialEngineeringVectors", "socialEngineeringVulnerabilities"]
           },
           interactiveSimulation: {
             type: Type.OBJECT,
