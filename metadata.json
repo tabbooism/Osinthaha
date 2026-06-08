@@ -1,0 +1,8 @@
+{
+  "name": "PsycheOps Strategic Dossier",
+  "description": "Clinical behavioral analysis, Machiavellian power dynamics, and red-ops human vulnerability assessment simulation dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
